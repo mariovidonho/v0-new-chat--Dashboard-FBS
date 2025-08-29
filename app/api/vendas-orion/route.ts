@@ -1,38 +1,89 @@
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server"
 
-// Este array simula o banco de dados temporário.
-// A solução definitiva para a persistência seria usar um banco de dados real.
-let vendasOrionData = [];
+const orionData: any[] = [
+  {
+    data: "2024-01-15",
+    equipe: "Órion",
+    vendedor: "Giovanna",
+    funcao: "Vendedor",
+    ligacoes: 25,
+    conexoes: 18,
+    agendamentos: 8,
+    vendas: 3,
+    valor_vendas: 45000,
+  },
+  {
+    data: "2024-01-15",
+    equipe: "Órion",
+    vendedor: "Amanda",
+    funcao: "Vendedor",
+    ligacoes: 22,
+    conexoes: 16,
+    agendamentos: 7,
+    vendas: 2,
+    valor_vendas: 30000,
+  },
+  {
+    data: "2024-01-15",
+    equipe: "Órion",
+    vendedor: "Nayara",
+    funcao: "Vendedor",
+    ligacoes: 28,
+    conexoes: 20,
+    agendamentos: 9,
+    vendas: 4,
+    valor_vendas: 60000,
+  },
+  {
+    data: "2024-01-15",
+    equipe: "Órion",
+    vendedor: "Thayssa",
+    funcao: "Telemarketing",
+    ligacoes: 35,
+    conexoes: 25,
+    agendamentos: 15,
+    vendas: 0,
+    valor_vendas: 0,
+  },
+]
 
-// Handler para a requisição GET
-export async function GET() {
-  return NextResponse.json(vendasOrionData);
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+
+    const requiredFields = [
+      "data",
+      "equipe",
+      "vendedor",
+      "funcao",
+      "ligacoes",
+      "conexoes",
+      "agendamentos",
+      "vendas",
+      "valor_vendas",
+    ]
+    for (const field of requiredFields) {
+      if (body[field] === undefined || body[field] === null) {
+        return NextResponse.json({ error: `Campo obrigatório ausente: ${field}` }, { status: 400 })
+      }
+    }
+
+    // Ensure equipe is "Órion"
+    body.equipe = "Órion"
+
+    if (!["Vendedor", "Telemarketing"].includes(body.funcao)) {
+      return NextResponse.json({ error: "Função deve ser 'Vendedor' ou 'Telemarketing'" }, { status: 400 })
+    }
+
+    // Add to storage
+    orionData.push(body)
+
+    return NextResponse.json({ message: "Dados da Equipe Órion recebidos com sucesso", data: body }, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: "Erro ao processar dados da Equipe Órion" }, { status: 500 })
+  }
 }
 
-// Handler para a requisição POST
-export async function POST(req: Request) {
-  const newData = await req.json();
-
-  if (!Array.isArray(newData)) {
-    return NextResponse.json({ error: 'Os dados enviados devem ser um array de objetos.' }, { status: 400 });
-  }
-
-  newData.forEach(item => {
-    const { data, vendedor, equipe } = item;
-    
-    // Verifica se o registro já existe para o mesmo vendedor, equipe e data
-    const existingRecordIndex = vendasOrionData.findIndex(
-      (record) => record.data === data && record.vendedor === vendedor && record.equipe === equipe
-    );
-
-    if (existingRecordIndex !== -1) {
-      // Se existir, atualiza o registro
-      vendasOrionData[existingRecordIndex] = { ...vendasOrionData[existingRecordIndex], ...item };
-    } else {
-      // Se não existir, adiciona o novo registro
-      vendasOrionData.push(item);
-    }
-  });
-
-  return NextResponse.json({ message: 'Dados da Equipe Orion recebidos com sucesso e atualizados.' });
+export async function GET() {
+  return NextResponse.json(orionData)
 }
