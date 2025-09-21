@@ -45,28 +45,39 @@ export default function FBSPrimeDashboard() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [isFiltering, setIsFiltering] = useState(false)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [metaResponse, orionResponse, furiaResponse] = await Promise.all([
-          fetch("/api/meta-ads"),
-          fetch("/api/vendas-orion"),
-          fetch("/api/vendas-furia"),
-        ])
+  const loadData = async () => {
+    try {
+      const [metaResponse, orionResponse, furiaResponse] = await Promise.all([
+        fetch("/api/meta-ads"),
+        fetch("/api/vendas-orion"),
+        fetch("/api/vendas-furia"),
+      ])
 
-        const metaData = await metaResponse.json()
-        const orionDataRes = await orionResponse.json()
-        const furiaDataRes = await furiaResponse.json()
+      const metaData = await metaResponse.json()
+      const orionDataRes = await orionResponse.json()
+      const furiaDataRes = await furiaResponse.json()
 
-        setMetaAdsData(metaData)
-        setOrionData(orionDataRes)
-        setFuriaData(furiaDataRes)
-        setLastUpdate(new Date())
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error)
-      }
+      setMetaAdsData(metaData)
+      setOrionData(orionDataRes)
+      setFuriaData(furiaDataRes)
+      setLastUpdate(new Date())
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error)
     }
+  }
 
+  const refreshMetaAdsData = async () => {
+    try {
+      const response = await fetch("/api/meta-ads")
+      const metaData = await response.json()
+      setMetaAdsData(metaData)
+      setLastUpdate(new Date())
+    } catch (error) {
+      console.error("Erro ao atualizar dados do Meta Ads:", error)
+    }
+  }
+
+  useEffect(() => {
     loadData()
   }, [])
 
@@ -413,6 +424,16 @@ export default function FBSPrimeDashboard() {
                   <SelectItem value="Telemarketing">Telemarketing</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Button
+                onClick={refreshMetaAdsData}
+                variant="outline"
+                size="sm"
+                className="bg-blue-600 border-blue-500 text-white hover:bg-blue-500"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Atualizar Meta Ads
+              </Button>
 
               {hasActiveFilters && (
                 <Button
